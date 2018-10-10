@@ -1,0 +1,11 @@
+version: '2'
+services:
+
+  redis:
+    image: redelivre/alpine-redis
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - "username=$username"
+        - "release=stable"
