@@ -1,0 +1,5 @@
+FROM redelivre/alpine-redis:base
+
+USER $username
+WORKDIR /home/$username
+ENTRYPOINT redis-cli -s /var/run/redis.sock 

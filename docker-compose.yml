@@ -1,14 +1,30 @@
 version: '2'
 services:
 
-  redis:
-    image: redelivre/alpine-redis
+  cli:
+    image: redelivre/alpine-redis:cli
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.cli
+
+  server:
+    image: redelivre/alpine-redis:server
+    build:
+      context: .
+      dockerfile: Dockerfile.server
       args:
         - "username=$username"
+
+  base:
+    image: redelivre/alpine-redis:base
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
         - "release=stable"
+        - "username=$username"
+        - "pwd=superstrongpasword"
+        - "host=127.0.0.1"
         - "protectedMode=yes"
         - "redisPort=6379"
         - "tcpBacklog=127"
@@ -21,4 +37,9 @@ services:
         - "alwaysShowLogo=yes"
         - "rdbCompression=yes"
         - "rdbChecksum=yes"
+        - "daemonize=yes"
+        - "supervised=no"
+        - "slaveServeStaleData=yes"
+        - "slaveReadOnly=yes"
+        - "replDisklessSync=no"
 

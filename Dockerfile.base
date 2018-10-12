@@ -1,21 +1,9 @@
 FROM redelivre/alpine:latest
 
 # Arguments
+ARG release
 ARG username
 ARG pwd
-ARG release
-ARG protectedMode
-ARG redisPort
-ARG tcpBacklog
-ARG tcpKeepalive
-ARG timeout
-ARG loglevel
-ARG syslogEnabled
-ARG syslogIdent
-ARG databases
-ARG alwaysShowLogo
-ARG rdbCompression
-ARG rdbChecksum
 
 # Download and configure
 WORKDIR /tmp
@@ -30,21 +18,49 @@ RUN make distclean \
     && make install \
     && rm -r /tmp/**
 
-# Redis configuration
 WORKDIR /
+# Arguments
+ARG host
+ARG username
+ARG pwd
+ARG protectedMode
+ARG redisPort
+ARG tcpBacklog
+ARG tcpKeepalive
+ARG timeout
+ARG loglevel
+ARG syslogEnabled
+ARG syslogIdent
+ARG databases
+ARG alwaysShowLogo
+ARG rdbCompression
+ARG rdbChecksum
+ARG daemonize
+ARG supervised
+ARG replDisklessSync
+ARG slaveReadOnly
+ARG slaveServeStaleData
+
+# Envs
 ENV __redis__ /home/$username/.redis
-ENV __config__ $__redis__/redis.conf
+ENV __config__ /etc/redis/redis.conf
 ENV __log__ /var/log
 ENV __run__  /var/run
 ENV __logfile__ $__log__/redis.log
 ENV __sock__ $__run__/redis.sock
 ENV __pid__ $__run__/redis.pid
 ENV __data__ $__redis__/data
-COPY . $__redis__
-RUN mkdir $__data__ \
-    && chown -R $username:wheel $__redis__
 
-RUN for i in 's|\$host|127.0.0.1|g' \
+# Cofiguration
+COPY . /etc/redis
+RUN mkdir $__redis__ \
+    && mkdir $__data__ \
+    && for i in $__logfile__ $__sock__ $__pid__ ; do  \
+      touch $i && chown $username:wheel $i ;  \
+    done \
+    && chown -R $username:wheel $__data__ \
+    && chown $username:wheel /etc/redis/redis.conf \
+    && for i in 's|\$host|$host|g' \
              's|\$protected_mode|'$protectedMode'|g' \
              's|\$redis_port|'$redisPort'|g' \
              's|\$timeout|'$timeout'|g' \
@@ -61,10 +77,12 @@ RUN for i in 's|\$host|127.0.0.1|g' \
              's|\$unixsocket|'$__run__/redis.sock'|g' \
              's|\$pidfile|'$__run__/redis.pid'|g' \ 
              's|\$logfile|'$__log__/redis.log'|g' \
-             's|\$daemonize|yes|g' \
-             's|\$supervised|no|g'  ; do \         
+             's|\$daemonize|'$daemonize'|g' \
+             's|\$supervised|'$supervised'|g' \
+             's|\$replDisklessSync|'$replDisklessSync'|g' \
+             's|\$slaveReadOnly|'$slaveReadyOnly'|g' \
+             's|\$slaveServeStaleData|'$slaveServeStaleData'|g' \
+             's|\$requirepass|'$pwd'|g' ; do \         
       sed -i $(echo "$i") $__config__; \
-    done
-RUN echo "$username:$pwd" | sudo chpasswd --md5
-EXPOSE $redis_port
-CMD echo "$pwd" | sudo redis-server $__config__ 
+    done \
+    && echo "$username:$pwd" | chpasswd --md5

@@ -1,0 +1,6 @@
+FROM redelivre/alpine-redis:base
+ARG username
+ARG pwd
+USER $username
+WORKDIR /home/$username
+CMD redis-server /etc/redis/redis.conf
