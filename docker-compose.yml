@@ -9,3 +9,16 @@ services:
       args:
         - "username=$username"
         - "release=stable"
+        - "protectedMode=yes"
+        - "redisPort=6379"
+        - "tcpBacklog=127"
+        - "tcpKeepalive=300"
+        - "timeout=0"
+        - "loglevel=notice"
+        - "syslogEnabled=yes"
+        - "syslogIdent=redelivreAlpineRedis"
+        - "databases=16"
+        - "alwaysShowLogo=yes"
+        - "rdbCompression=yes"
+        - "rdbChecksum=yes"
+
