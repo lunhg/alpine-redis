@@ -13,6 +13,6 @@ before_install:
   - docker-compose --version
 
 install:
-  - docker-compose up -d 
+  - docker-compose up -d server cli
   - docker-compose ps 
   - docker-compose logs
