@@ -13,17 +13,9 @@ services:
       context: .
       dockerfile: Dockerfile.server
       args:
+        - "release=$REDIS_VERSION"
         - "username=$username"
-
-  base:
-    image: redelivre/alpine-redis:base
-    build:
-      context: .
-      dockerfile: Dockerfile.base
-      args:
-        - "release=stable"
-        - "username=$username"
-        - "pwd=superstrongpasword"
+        - "pwd=$redis_pwd"
         - "host=127.0.0.1"
         - "protectedMode=yes"
         - "redisPort=6379"

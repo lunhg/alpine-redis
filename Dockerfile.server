@@ -1,6 +1,88 @@
-FROM redelivre/alpine-redis:base
+FROM forumi0721alpineaarch64/alpine-aarch64-dev
+
+# Arguments
+ARG username
+ARG release
+ARG pwd
+ARG host
 ARG username
 ARG pwd
+ARG protectedMode
+ARG redisPort
+ARG tcpBacklog
+ARG tcpKeepalive
+ARG timeout
+ARG loglevel
+ARG syslogEnabled
+ARG syslogIdent
+ARG databases
+ARG alwaysShowLogo
+ARG rdbCompression
+ARG rdbChecksum
+ARG daemonize
+ARG supervised
+ARG replDisklessSync
+ARG slaveReadOnly
+ARG slaveServeStaleData
+
+# Envs
+ENV __redis__ /home/$username/.redis
+ENV __config__ /etc/redis/redis.conf
+ENV __log__ /var/log
+ENV __run__  /var/run
+ENV __logfile__ $__log__/redis.log
+ENV __sock__ $__run__/redis.sock
+ENV __pid__ $__run__/redis.pid
+ENV __data__ $__redis__/data
+
+RUN adduser -G wheel -D -h /home/$username $username \
+    && echo "%wheel ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
+    && chown -R $username: /home/$username
+
+WORKDIR /tmp
 USER $username
+RUN curl -L https://github.com/antirez/redis/archive/$release.tar.gz | tar zx
+WORKDIR /tmp/redis-$release
+RUN make
+RUN sudo make install
+COPY . /etc/redis
 WORKDIR /home/$username
-CMD redis-server /etc/redis/redis.conf
+RUN for i in "/tmp/$release.tar.gz" \
+             "-r /tmp/redis-$release" ; do \
+        rm $i ; \
+    done \
+    && mkdir $__redis__ \
+    && mkdir $__data__ \
+    && for i in $__logfile__ $__sock__ $__pid__ ; do  \
+      touch $i && chown $username:wheel $i ;  \
+    done \
+    && chown -R $username:wheel $__data__ \
+    && chown $username:wheel /etc/redis/redis.conf \
+    && for i in 's|\$host|$host|g' \
+             's|\$protected_mode|'$protectedMode'|g' \
+             's|\$redis_port|'$redisPort'|g' \
+             's|\$timeout|'$timeout'|g' \
+             's|\$tcp_backlog|'$tcpBacklog'|g' \
+             's|\$tcp_keepalive|'$tcpKeepalive'|g' \
+             's|\$loglevel|'$loglevel'|g' \
+             's|\$syslogEnabled|'$syslogEnabled'|g' \
+             's|\$syslogIdent|'$syslogIdent'|g' \
+             's|\$databases|'$databases'|g' \
+             's|\$alwaysShowLogo|'$alwaysShowLogo'|g' \
+             's|\$rdbCompression|'$rdbCompression'|g' \
+             's|\$rdbChecksum|'$rdbChecksum'|g' \
+             's|\$rdbDir|'$__data__'|g' \
+             's|\$unixsocket|'$__run__/redis.sock'|g' \
+             's|\$pidfile|'$__run__/redis.pid'|g' \ 
+             's|\$logfile|'$__log__/redis.log'|g' \
+             's|\$daemonize|'$daemonize'|g' \
+             's|\$supervised|'$supervised'|g' \
+             's|\$replDisklessSync|'$replDisklessSync'|g' \
+             's|\$slaveReadOnly|'$slaveReadyOnly'|g' \
+             's|\$slaveServeStaleData|'$slaveServeStaleData'|g' \
+             's|\$requirepass|'$pwd'|g' ; do \         
+      sed -i $(echo "$i") $__config__; \
+    done \
+    && sudo echo "$username:$pwd" | chpasswd --md5
+EXPOSE $redis_port
+ENTRYPOINT redis-server /etc/redis/redis.conf
