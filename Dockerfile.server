@@ -35,7 +35,7 @@ ENV __sock__ $__run__/redis.sock
 ENV __pid__ $__run__/redis.pid
 ENV __data__ $__redis__/data
 
-RUN apk add --no-cache --virtual redis-essentials sudo curl make \
+RUN apk add --no-cache --virtual redis-essentials sudo curl make gcc \
     && adduser -G wheel -D -h /home/$username $username \
     && echo "%wheel ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
     && chown -R $username: /home/$username
