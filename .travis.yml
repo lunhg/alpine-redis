@@ -1,22 +1,31 @@
+language: bash
+
+# Default linux jobs
+os: linux
 sudo: required
+dist: trusty
 
 env:
   DOCKER_COMPOSE_VERSION: 1.22.0
   REDIS_VERSION: 5.0.0
 
-services:
-  - docker
-  
 before_install:
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update -q
-  - sudo apt-get install curl
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
-  - docker-compose --version
+  - docker -v
+  - docker-compose -v
 
-install:
+script:
   - docker-compose up -d server
   - docker-compose up -d cli
-  - docker-compose ps 
+
+after_success:
+  - docker-compose ps
   - docker-compose logs
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  - docker-compose push server
+  - docker-compose push cli
+
+# don't notify me when things fail
+notifications:
+  email: false
