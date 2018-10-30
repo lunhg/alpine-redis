@@ -41,7 +41,7 @@ RUN adduser -G wheel -D -h /home/$username $username \
 
 WORKDIR /tmp
 USER $username
-RUN apk --no-cache --virtual add redis-essentials curl \
+RUN sudo apk --no-cache --virtual add redis-essentials curl \
     && curl -L https://github.com/antirez/redis/archive/$release.tar.gz | tar zx
 WORKDIR /tmp/redis-$release
 RUN make
