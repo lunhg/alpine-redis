@@ -35,14 +35,14 @@ ENV __sock__ $__run__/redis.sock
 ENV __pid__ $__run__/redis.pid
 ENV __data__ $__redis__/data
 
-RUN adduser -G wheel -D -h /home/$username $username \
+RUN apk --no-cache --virtual add redis-essentials sudo curl \
+    && adduser -G wheel -D -h /home/$username $username \
     && echo "%wheel ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
     && chown -R $username: /home/$username
 
 WORKDIR /tmp
 USER $username
-RUN sudo apk --no-cache --virtual add redis-essentials curl \
-    && curl -L https://github.com/antirez/redis/archive/$release.tar.gz | tar zx
+RUN curl -L https://github.com/antirez/redis/archive/$release.tar.gz | tar zx
 WORKDIR /tmp/redis-$release
 RUN make
 RUN sudo make install
