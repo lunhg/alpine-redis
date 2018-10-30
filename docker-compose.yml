@@ -14,7 +14,7 @@ services:
       dockerfile: Dockerfile.server
       args:
         - "release=$REDIS_VERSION"
-        - "username=$username"
+        - "username=$USER"
         - "pwd=$redis_pwd"
         - "host=127.0.0.1"
         - "protectedMode=yes"
