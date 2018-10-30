@@ -1,14 +1,6 @@
 version: '2'
 services:
 
-  cli:
-    image: redelivre/alpine-redis:cli
-    build:
-      context: .
-      dockerfile: Dockerfile.cli
-      args:
-        - "username=$USER"
-        
   server:
     image: redelivre/alpine-redis:server
     build:
@@ -36,4 +28,12 @@ services:
         - "slaveServeStaleData=yes"
         - "slaveReadOnly=yes"
         - "replDisklessSync=no"
+
+  cli:
+    image: redelivre/alpine-redis:cli
+    build:
+      context: .
+      dockerfile: Dockerfile.cli
+      args:
+        - "username=$USER"
 
