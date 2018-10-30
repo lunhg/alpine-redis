@@ -6,7 +6,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.cli
-
+      args:
+        - "username=$USER"
+        
   server:
     image: redelivre/alpine-redis:server
     build:
